@@ -16,7 +16,7 @@ module Heaven
           :icon_url    => "https://travis-ci.org/images/travis-mascot-150.png",
           :attachments => [{
             :text    => filtered_message,
-            :color   => green? ? "good" : "danger",
+            :color   => color,
             :pretext => pending? ? output_message : " "
           }]
       end
@@ -49,6 +49,16 @@ module Heaven
 
       def slack_account
         @slack_account ||= ::Slack::Notifier.new(slack_subdomain, slack_token)
+      end
+
+      def color
+        if pending?
+          "warning"
+        elsif green?
+          "good"
+        else
+          "danger"
+        end
       end
     end
   end
