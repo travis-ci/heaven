@@ -3,7 +3,7 @@ class Deployment
   # All of the process output from a deployment
   class Output
     include ApiClient
-    attr_accessor :gist, :guid, :name, :number, :stderr, :stdout
+    attr_accessor :gist, :guid, :name, :number, :stderr, :stdout, :url
 
     def initialize(name, number, guid)
       @guid   = guid
@@ -18,7 +18,9 @@ class Deployment
     end
 
     def create
-      gist
+      gist.tap do |gist|
+        self.url = "https://gist.github.com/#{gist.id}"
+      end
     end
 
     def update
@@ -27,10 +29,6 @@ class Deployment
       Rails.logger.info "Unable to update #{gist.id}, shit's fucked up."
     rescue StandardError => e
       Rails.logger.info "Unable to update #{gist.id}, #{e.class.name} - #{e.message}."
-    end
-
-    def url
-      "https://gist.github.com/#{gist.id}"
     end
 
     private
