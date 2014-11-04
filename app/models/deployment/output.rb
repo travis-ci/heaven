@@ -3,7 +3,7 @@ class Deployment
   # All of the process output from a deployment
   class Output
     include ApiClient
-    attr_accessor :gist, :guid, :name, :number, :stderr, :stdout
+    attr_accessor :gist, :guid, :name, :number, :stderr, :stdout, :url
 
     def initialize(name, number, guid)
       @guid   = guid
@@ -18,7 +18,9 @@ class Deployment
     end
 
     def create
-      gist
+      gist.tap do |gist|
+        self.url = "https://gist.github.com/#{gist.id}"
+      end
     end
 
     def update

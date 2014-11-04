@@ -116,26 +116,27 @@ module Heaven
         body   = JSON.parse(response.body)
         @build = HerokuBuild.new(app_name, body["id"])
 
+        status.output = "http://travis-deploy-logs-production.herokuapp.com/heroku/#{environment}/#{custom_payload_name}/#{build.id}"
+        status.pending!
+
         until build.completed?
-          sleep 10
+          sleep 5
           build.refresh!
         end
       end
 
       def notify
-        if build
-          output.stderr = build.stderr
-          output.stdout = build.stdout
-        else
-          output.stderr = "Unable to create a build"
-        end
+        status.output = "http://travis-deploy-logs-production.herokuapp.com/heroku/#{environment}/#{custom_payload_name}/#{build.id}"
 
-        output.update
         if build && build.success?
           status.success!
         else
           status.failure!
         end
+      end
+
+      def setup
+        credentials.setup!
       end
 
       private
