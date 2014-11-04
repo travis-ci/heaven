@@ -19,7 +19,7 @@ class Deployment
 
     def create
       gist.tap do |gist|
-        self.url = "https://gist.github.com/#{gist.id}"
+        self.url = gist.html_url
       end
     end
 
