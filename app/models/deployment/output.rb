@@ -31,6 +31,10 @@ class Deployment
       Rails.logger.info "Unable to update #{gist.id}, #{e.class.name} - #{e.message}."
     end
 
+    def url
+      gist.html_url
+    end
+
     private
 
     def create_params
