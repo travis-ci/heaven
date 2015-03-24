@@ -1,2 +1,3 @@
 web: bundle exec unicorn -p $PORT -c config/unicorn.rb
-worker: bundle exec rake resque:work QUEUE=*
+deployments: bundle exec rake resque:work QUEUE=deployments,locks
+statuses: bundle exec rake resque:work QUEUE=deployment_statuses,events,statuses
