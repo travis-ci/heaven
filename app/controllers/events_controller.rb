@@ -13,6 +13,7 @@ class EventsController < ApplicationController
 
     if valid_events.include?(event)
       request.body.rewind
+      data = request.body.read
 
       if verify_signature(data)
         Resque.enqueue(Receiver, event, delivery, event_params)
