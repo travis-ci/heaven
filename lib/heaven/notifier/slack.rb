@@ -14,8 +14,8 @@ module Heaven
         output_message << "##{deployment_number} - #{repo_name} / #{ref} / #{environment}"
         slack_account.ping "",
           :channel     => "##{chat_room}",
-          :username    => "travisbot",
-          :icon_url    => "https://travis-ci.org/images/travis-mascot-150.png",
+          :username    => "Heaven",
+          :icon_emoji   => ":cloud:",
           :attachments => [{
             :text    => filtered_message,
             :color   => color,
