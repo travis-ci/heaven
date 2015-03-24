@@ -13,16 +13,15 @@ class EventsController < ApplicationController
 
     if valid_events.include?(event)
       request.body.rewind
-      data = request.body.read
 
       if verify_signature(data)
-        Resque.enqueue(Receiver, event, delivery, data)
-        render :status => 201, :json => "{}"
+        Resque.enqueue(Receiver, event, delivery, event_params)
+        render :json => {}, :status => :created
       else
-        render :status => 401, :json => "{}"
+        render :json => {}, :status => :unauthorized
       end
     else
-      render :status => 404, :json => "{}"
+      render :json => {}, :status => :unprocessable_entity
     end
   end
 
@@ -30,8 +29,14 @@ class EventsController < ApplicationController
     %w{deployment deployment_status status ping}
   end
 
+  private
+
   def verify_signature(data)
     signature = 'sha1=' + OpenSSL::HMAC.hexdigest(OpenSSL::Digest.new('sha1'), ENV['SECRET_TOKEN'], data)
     Rack::Utils.secure_compare(signature, request.headers['HTTP_X_HUB_SIGNATURE'])
+  end
+
+  def event_params
+    params.permit!
   end
 end

@@ -4,23 +4,20 @@ module Heaven
     # The super class provider, all providers inherit from this.
     class DefaultProvider
       include ApiClient
+      include DeploymentTimeout
       include LocalLogFile
 
-      attr_accessor :credentials, :guid, :last_child, :name, :payload
+      attr_accessor :credentials, :guid, :last_child, :name, :data
 
       # See http://stackoverflow.com/questions/12093748/how-do-i-check-for-valid-git-branch-names
       # and http://linux.die.net/man/1/git-check-ref-format
       VALID_GIT_REF = %r{\A(?!/)(?!.*(?:/\.|//|@\{|\\|\.\.))[\040-\176&&[^ ~\^:?*\[]]+(?<!\.lock|/|\.)\z}
 
-      def initialize(guid, payload)
+      def initialize(guid, data)
         @guid        = guid
         @name        = "unknown"
-        @payload     = payload
+        @data        = data
         @credentials = ::Deployment::Credentials.new(working_directory)
-      end
-
-      def data
-        @data ||= JSON.parse(payload)
       end
 
       def output
@@ -142,21 +139,36 @@ module Heaven
                           :sha             => sha)
       end
 
-      def timeout
-        Integer(ENV["DEPLOYMENT_TIMEOUT"] || "300")
+      def update_output
+        output.stderr = File.read(stderr_file) if File.exist?(stderr_file)
+        output.stdout = File.read(stdout_file) if File.exist?(stdout_file)
+
+        output.update
+      end
+
+      def notify
+        update_output
+
+        last_child.success? ? status.success! : status.failure!
       end
 
       def run!
         Timeout.timeout(timeout) do
+          start_deployment_timeout!
           setup
           execute unless Rails.env.test?
           notify
           record
         end
+      rescue POSIX::Spawn::TimeoutExceeded, Timeout::Error => e
+        Rails.logger.info e.message
+        Rails.logger.info e.backtrace
+        outuput.stderr += "\n\nDEPLOYMENT TIMED OUT AFTER #{timeout} SECONDS"
       rescue StandardError => e
         Rails.logger.info e.message
         Rails.logger.info e.backtrace
       ensure
+        update_output
         status.failure! unless completed?
       end
     end
