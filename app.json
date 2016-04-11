@@ -32,7 +32,7 @@
     },
     "DEPLOYMENT_TIMEOUT": {
       "description": "The maximum amount of time a deployment can take in seconds.",
-      "value": "1000"
+      "value": "300"
     },
     "BUILDPACK_URL": "https://github.com/ddollar/heroku-buildpack-multi.git",
     "RAILS_ENV": {
